@@ -8,9 +8,8 @@ namespace SocialNetwork.Data
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
-        public Post? Post { get; set; }
+        public Profile TargetProfile { get; set; }
         public Comment? Comment { get; set; }
         public Like? Like { get; set; }
-        public DateTime CreatedAt { get; set; }
     }
 }

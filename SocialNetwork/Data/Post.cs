@@ -10,6 +10,7 @@ namespace SocialNetwork.Data
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public String Text { get; set; }
+        public Profile Author { get; set; }
         public List<String> AttachmentsUrl { get; set; }
         public List<Comment> Comments { get; set; }
         public List<Like> Likes { get; set; }
