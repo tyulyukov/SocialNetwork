@@ -7,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SocialNetwork.Helpers;
 using SocialNetwork.Data;
+using SocialNetwork.Data.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +32,7 @@ namespace SocialNetwork
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<Profile>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
             services.AddRazorPages();
@@ -39,6 +41,8 @@ namespace SocialNetwork
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            Media.WebRootPath = env.WebRootPath;
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

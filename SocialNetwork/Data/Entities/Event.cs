@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SocialNetwork.Data
+namespace SocialNetwork.Data.Entities
 {
     public class Event
     {
