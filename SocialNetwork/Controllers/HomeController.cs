@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SocialNetwork.Helpers;
 using SocialNetwork.Models;
 using System;
 using System.Collections.Generic;
@@ -26,6 +28,12 @@ namespace SocialNetwork.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        public IActionResult UploadImage(IFormFile file)
+        {
+            Media.UploadImage(file, "images");
+            return RedirectToAction(nameof(Index));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

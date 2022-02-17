@@ -1,42 +1,43 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using ImageProcessor;
+using ImageProcessor.Plugins.WebP.Imaging.Formats;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace SocialNetwork.Helpers
 {
     public static class Media
     {
+        public static readonly List<String> ImageExtensions = new List<String> { ".JPG", ".JPE", ".BMP", ".GIF", ".PNG" };
         public static String WebRootPath;
         public static String StoragePath => WebRootPath + "\\storage\\";
 
-        public static string GetFileExtension(string contentType)
+        public static bool IsImage(string fileExtension)
         {
-            string result;
-            RegistryKey key;
-            object value;
-
-            key = Registry.ClassesRoot.OpenSubKey(@"MIME\Database\Content Type\" + contentType, false);
-            value = key?.GetValue("Extension", null);
-            result = value != null ? value.ToString() : string.Empty;
-
-            return result;
+            String value = fileExtension.ToUpper();
+            return ImageExtensions.Contains(value);
         }
 
-        public async static Task<String> UploadImage(IFormFile file, String directoryName)
+        public static string UploadImage(IFormFile file, String directoryName)
         {
             if (file == null)
                 return String.Empty;
 
-            String fileExtension = GetFileExtension(file.ContentType);
+            String fileExtension = Path.GetExtension(file.FileName);
 
-            String fileName = Guid.NewGuid().ToString() + fileExtension;
+            if (!IsImage(fileExtension))
+                return String.Empty;
+
+            String fileName = Guid.NewGuid().ToString() + ".webp";
             String basePath = CreateDirectory(DateTime.Today, directoryName) + "/" + fileName;
 
-            using (var fileStream = new FileStream(StoragePath + basePath, FileMode.Create))
-                await file.CopyToAsync(fileStream);
+            using (var webPFileStream = new FileStream(StoragePath + basePath, FileMode.Create))
+                using (ImageFactory imageFactory = new ImageFactory(preserveExifData: false))
+                    imageFactory.Load(file.OpenReadStream())
+                                .Format(new WebPFormat())
+                                .Quality(50)
+                                .Save(webPFileStream);
 
             return "/storage/" + basePath;
         }
