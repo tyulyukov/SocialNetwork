@@ -9,6 +9,7 @@ namespace SocialNetwork.Data.Entities
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public Profile TargetProfile { get; set; }
+        public Guid TargetProfileId { get; set; }
         public Comment? Comment { get; set; }
         public Like? Like { get; set; }
     }

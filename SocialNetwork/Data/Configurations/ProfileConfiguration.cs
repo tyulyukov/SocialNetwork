@@ -15,42 +15,17 @@ namespace SocialNetwork.Data.Configurations
 
             builder
                 .Property(p => p.AvatarImageUrl)
-                .HasDefaultValue("/storage/avatars/default-avatar.png");
+                .HasDefaultValue("'/storage/avatars/default-avatar.png'");
 
             builder
-                .HasMany(p => p.Posts)
-                .WithOne(pp => pp.Author)
-                .HasForeignKey(pp => pp.Author.Id);
+                .HasMany(p => p.Followers)
+                .WithMany(f => f.Following)
+                .UsingEntity(j => j.ToTable("Follows"));
 
             builder
-                .HasMany(p => p.Likes)
-                .WithOne(pl => pl.Author)
-                .HasForeignKey(pl => pl.Author.Id);
-
-            builder
-                .HasMany(p => p.Comments)
-                .WithOne(pc => pc.Author)
-                .HasForeignKey(pc => pc.Author.Id);
-
-            builder
-                .HasMany(c => c.Followers)
-                .WithOne(s => s.)
-                .UsingEntity<Enrollment>(
-                   j => j
-                    .HasOne(pt => pt.Student)
-                    .WithMany(t => t.Enrollments)
-                    .HasForeignKey(pt => pt.StudentId),
-                j => j
-                    .HasOne(pt => pt.Course)
-                    .WithMany(p => p.Enrollments)
-                    .HasForeignKey(pt => pt.CourseId),
-                j =>
-                {
-                    j.Property(pt => pt.EnrollmentDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                    j.Property(pt => pt.Mark).HasDefaultValue(3);
-                    j.HasKey(t => new { t.CourseId, t.StudentId });
-                    j.ToTable("Enrollments");
-                });
+                .HasMany(p => p.Following)
+                .WithMany(f => f.Followers)
+                .UsingEntity(j => j.ToTable("Follows"));
         }
     }
 }

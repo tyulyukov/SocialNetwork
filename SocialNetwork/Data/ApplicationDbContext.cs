@@ -5,7 +5,7 @@ using System;
 
 namespace SocialNetwork.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<Entities.Profile>
     {
         public DbSet<Entities.Post> Posts { get; set; }
         public DbSet<Entities.Like> Likes { get; set; }
@@ -22,18 +22,9 @@ namespace SocialNetwork.Data
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<Entities.Like>()
-                .Property(l => l.CreatedAt)
-                .HasDefaultValueSql("getdate()");
-
-            builder.Entity<Entities.Comment>()
-                .Property(c => c.CreatedAt)
-                .HasDefaultValueSql("getdate()");
-
-            builder.Entity<Entities.Image>()
-                .Property(c => c.CreatedAt)
-                .HasDefaultValueSql("getdate()");
-
+            builder.ApplyConfiguration(new LikeConfiguration());
+            builder.ApplyConfiguration(new CommentConfiguration());
+            builder.ApplyConfiguration(new ImageConfiguration());
             builder.ApplyConfiguration(new ProfileConfiguration());
         }
     }
