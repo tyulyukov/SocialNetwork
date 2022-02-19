@@ -43,6 +43,14 @@ namespace SocialNetwork
                    googleOptions.CallbackPath = new PathString("/ExternalLogin");
                });
 
+            services.AddAuthentication()
+                .AddFacebook(facebookOptions =>
+                {
+                    facebookOptions.AppId = Configuration["Authentication:Facebook:AppId"];
+                    facebookOptions.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
+                    facebookOptions.AccessDeniedPath = new PathString("/AccessDenied");
+                });
+
             /*services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>
                     {
