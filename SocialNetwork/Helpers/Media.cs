@@ -32,12 +32,12 @@ namespace SocialNetwork.Helpers
             String fileName = Guid.NewGuid().ToString() + ".webp";
             String basePath = CreateDirectory(DateTime.Today, directoryName) + "/" + fileName;
 
-            using (var webPFileStream = new FileStream(StoragePath + basePath, FileMode.Create))
+            using (var webPFileStream = file.OpenReadStream())
                 using (ImageFactory imageFactory = new ImageFactory(preserveExifData: false))
-                    imageFactory.Load(file.OpenReadStream())
+                    imageFactory.Load(webPFileStream)
                                 .Format(new WebPFormat())
-                                .Quality(50)
-                                .Save(webPFileStream);
+                                .Quality(70)
+                                .Save(StoragePath + basePath);
 
             return "/storage/" + basePath;
         }

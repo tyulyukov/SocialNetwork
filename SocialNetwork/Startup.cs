@@ -1,8 +1,5 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,9 +8,10 @@ using SocialNetwork.Helpers;
 using SocialNetwork.Data;
 using SocialNetwork.Data.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using SocialNetwork.Helpers.Auth;
+using Microsoft.AspNetCore.Http;
 
 namespace SocialNetwork
 {
@@ -36,6 +34,31 @@ namespace SocialNetwork
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            services.AddAuthentication()
+               .AddGoogle(googleOptions =>
+               {
+                   googleOptions.ClientId = Configuration["Authentication:Google:ClientId"];
+                   googleOptions.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
+                   googleOptions.CallbackPath = new PathString("/ExternalLogin");
+               });
+
+            /*services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddJwtBearer(options =>
+                    {
+                        options.RequireHttpsMetadata = false;
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuer = true,
+                            ValidIssuer = AuthOptions.Issuer,
+                            ValidateAudience = true,
+                            ValidAudience = AuthOptions.Audince,
+                            ValidateLifetime = true,
+                            IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+                            ValidateIssuerSigningKey = true,
+                        };
+                    });
+            services.AddControllersWithViews();*/
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
