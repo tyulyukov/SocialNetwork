@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using SocialNetwork.Helpers.Auth;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using SocialNetwork.Helpers.Notify;
 
 namespace SocialNetwork
 {
@@ -34,6 +36,8 @@ namespace SocialNetwork
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddAuthentication()
                .AddGoogle(googleOptions =>

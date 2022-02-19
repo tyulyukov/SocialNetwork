@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Data.Entities;
+using SocialNetwork.Helpers.Notify;
 
 namespace SocialNetwork.Areas.Identity.Pages.Account
 {
@@ -51,6 +52,17 @@ namespace SocialNetwork.Areas.Identity.Pages.Account
             public string Username { get; set; }
 
             [Required]
+            [Display(Name = "Email")]
+            [EmailAddress]
+            public string Email { get; set; }
+
+            [Required]
+            [Display(Name = "Phone number")]
+            [DataType(DataType.PhoneNumber)]
+            [StringLength(13, MinimumLength = 10)]
+            public string PhoneNumber { get; set; }
+
+            [Required]
             [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
             [DataType(DataType.Password)]
             [Display(Name = "Password")]
@@ -75,14 +87,31 @@ namespace SocialNetwork.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                var user = new Profile { UserName = Input.Username };
+                bool failedRegister = false;
+
+                if (await _userManager.FindByNameAsync(Input.Username) != null)
+                {
+                    ModelState.AddModelError(string.Empty, "This username is already taken");
+                    failedRegister = true;
+                }
+
+                if (await _userManager.FindByEmailAsync(Input.Email) != null)
+                {
+                    ModelState.AddModelError(string.Empty, "This email is already taken");
+                    failedRegister = true;
+                }
+
+                if (failedRegister)
+                    return Page();
+
+                var user = new Profile { UserName = Input.Username, PhoneNumber = Input.PhoneNumber, Email = Input.Email };
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    /*var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
@@ -90,18 +119,17 @@ namespace SocialNetwork.Areas.Identity.Pages.Account
                         values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
 
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email", $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
                         return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                     }
                     else
-                    {*/
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return LocalRedirect(returnUrl);
-                    //}
+                    {
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        return LocalRedirect(returnUrl);
+                    }
                 }
 
                 foreach (var error in result.Errors)
