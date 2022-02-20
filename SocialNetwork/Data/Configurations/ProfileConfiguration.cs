@@ -15,7 +15,7 @@ namespace SocialNetwork.Data.Configurations
 
             builder
                 .Property(p => p.AvatarImageUrl)
-                .HasDefaultValue("'/storage/avatars/default-avatar.png'");
+                .HasDefaultValue("/storage/avatars/default-avatar.png");
 
             builder
                 .HasMany(p => p.Followers)

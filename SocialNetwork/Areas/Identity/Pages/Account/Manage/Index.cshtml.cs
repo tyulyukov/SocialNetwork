@@ -23,8 +23,6 @@ namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
             _signInManager = signInManager;
         }
 
-        public string Username { get; set; }
-
         [TempData]
         public string StatusMessage { get; set; }
 
@@ -33,6 +31,9 @@ namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
 
         public class InputModel
         {
+            [Display(Name = "Username")]
+            public string Username { get; set; }
+
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
@@ -43,10 +44,9 @@ namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
 
-            Username = userName;
-
             Input = new InputModel
-            {
+            {   
+                Username = userName,
                 PhoneNumber = phoneNumber
             };
         }
@@ -78,6 +78,30 @@ namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
             }
 
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+            var username = await _userManager.GetUserNameAsync(user);
+
+            if (Input.Username == username && Input.PhoneNumber == phoneNumber)
+            {
+                StatusMessage = "Your profile is unchanged.";
+                return RedirectToPage();
+            }
+
+            if (Input.Username != username)
+            {
+                if (await _userManager.FindByNameAsync(Input.Username) != null)
+                {
+                    StatusMessage = "This username is already taken";
+                    return RedirectToPage();
+                }
+
+                var setUserNameResult = await _userManager.SetUserNameAsync(user, Input.Username);
+                if (!setUserNameResult.Succeeded)
+                {
+                    StatusMessage = "Unexpected error when trying to set username.";
+                    return RedirectToPage();
+                }
+            }
+
             if (Input.PhoneNumber != phoneNumber)
             {
                 var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);

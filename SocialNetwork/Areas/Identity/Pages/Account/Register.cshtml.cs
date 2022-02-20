@@ -58,8 +58,7 @@ namespace SocialNetwork.Areas.Identity.Pages.Account
 
             [Required]
             [Display(Name = "Phone number")]
-            [DataType(DataType.PhoneNumber)]
-            [StringLength(13, MinimumLength = 10)]
+            [Phone]
             public string PhoneNumber { get; set; }
 
             [Required]
