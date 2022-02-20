@@ -2,7 +2,7 @@
 @inject SignInManager<SocialNetwork.Data.Entities.Profile> SignInManager
 @inject UserManager<SocialNetwork.Data.Entities.Profile> UserManager
 
-<ul class="navbar-nav">
+<ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
     @if (SignInManager.IsSignedIn(User))
     {
         <li class="nav-item">

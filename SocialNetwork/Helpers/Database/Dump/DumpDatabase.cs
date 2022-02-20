@@ -13,7 +13,7 @@ namespace SocialNetwork.Helpers.Database.Dump
     public class DumpDatabase : Dump
     {
         public DumpDatabase(ApplicationDbContext context) : base(context) { }
-        public event Action<String> OnBackupCreated;
+        //public event Action<String> OnBackupCreated;
 
         public override String Create()
         {
