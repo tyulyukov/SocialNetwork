@@ -15,9 +15,7 @@ namespace SocialNetwork.Controllers
         private readonly UserManager<Profile> _userManager;
         private readonly SignInManager<Profile> _signInManager;
 
-        public MyProfileController(
-            UserManager<Profile> userManager,
-            SignInManager<Profile> signInManager)
+        public MyProfileController(UserManager<Profile> userManager, SignInManager<Profile> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;

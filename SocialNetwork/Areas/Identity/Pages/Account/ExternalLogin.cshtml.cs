@@ -50,6 +50,16 @@ namespace SocialNetwork.Areas.Identity.Pages.Account
         public class InputModel
         {
             [Required]
+            [Display(Name = "Username")]
+            [RegularExpression(@"^[a-zA-Z0-9]*$", ErrorMessage = "Username must contain only letters without spaces")]
+            public string Username { get; set; }
+
+            [Required]
+            [Display(Name = "Full name")]
+            [RegularExpression(@"^[a-zA-Z ]*$", ErrorMessage = "Full name must contain only letters")]
+            public string FullName { get; set; }
+
+            [Required]
             [EmailAddress]
             public string Email { get; set; }
         }
@@ -122,7 +132,24 @@ namespace SocialNetwork.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                var user = new Profile { UserName = Input.Email, Email = Input.Email };
+                var user = new Profile { UserName = Input.Username, FullName = Input.FullName, Email = Input.Email };
+
+                bool failedRegister = false;
+
+                if (await _userManager.FindByNameAsync(Input.Username) != null)
+                {
+                    ModelState.AddModelError(string.Empty, "This username is already taken");
+                    failedRegister = true;
+                }
+
+                if (await _userManager.FindByEmailAsync(Input.Email) != null)
+                {
+                    ModelState.AddModelError(string.Empty, "This email is already taken");
+                    failedRegister = true;
+                }
+
+                if (failedRegister)
+                    return Page();
 
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)

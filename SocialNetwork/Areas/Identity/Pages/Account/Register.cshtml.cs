@@ -49,7 +49,13 @@ namespace SocialNetwork.Areas.Identity.Pages.Account
         {
             [Required]
             [Display(Name = "Username")]
+            [RegularExpression(@"^[a-zA-Z0-9]*$", ErrorMessage = "Username must contain only letters without spaces")]
             public string Username { get; set; }
+
+            [Required]
+            [Display(Name = "Full name")]
+            [RegularExpression(@"^[a-zA-Z ]*$", ErrorMessage = "Full name must contain only letters")]
+            public string FullName { get; set; }
 
             [Required]
             [Display(Name = "Email")]
@@ -103,7 +109,7 @@ namespace SocialNetwork.Areas.Identity.Pages.Account
                 if (failedRegister)
                     return Page();
 
-                var user = new Profile { UserName = Input.Username, PhoneNumber = Input.PhoneNumber, Email = Input.Email };
+                var user = new Profile { UserName = Input.Username, PhoneNumber = Input.PhoneNumber, Email = Input.Email, FullName = Input.FullName };
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)

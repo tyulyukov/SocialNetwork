@@ -44,7 +44,7 @@ namespace SocialNetwork
                {
                    googleOptions.ClientId = Configuration["Authentication:Google:ClientId"];
                    googleOptions.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
-                   googleOptions.CallbackPath = new PathString("/ExternalLogin");
+                   googleOptions.CallbackPath = new PathString("/ExternalLogin"); 
                });
 
             services.AddAuthentication()

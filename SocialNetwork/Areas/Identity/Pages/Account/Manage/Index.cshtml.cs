@@ -32,7 +32,16 @@ namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
         public class InputModel
         {
             [Display(Name = "Username")]
+            [RegularExpression(@"^[a-zA-Z0-9]*$", ErrorMessage = "Username must contain only letters without spaces")]
             public string Username { get; set; }
+
+            [Display(Name = "Full name")]
+            [RegularExpression(@"^[a-zA-Z ]*$", ErrorMessage = "Full name must contain only letters")]
+            public string FullName { get; set; }
+
+            [Display(Name = "Description")]
+            [StringLength(maximumLength: 150)]
+            public string Description { get; set; }
 
             [Phone]
             [Display(Name = "Phone number")]
@@ -47,7 +56,9 @@ namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
             Input = new InputModel
             {   
                 Username = userName,
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                FullName = user.FullName,
+                Description = user.Description
             };
         }
 
@@ -80,36 +91,23 @@ namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             var username = await _userManager.GetUserNameAsync(user);
 
-            if (Input.Username == username && Input.PhoneNumber == phoneNumber)
+            if (Input.Username == username && Input.PhoneNumber == phoneNumber && Input.FullName == user.FullName && Input.Description == user.Description)
             {
                 StatusMessage = "Your profile is unchanged.";
                 return RedirectToPage();
             }
 
-            if (Input.Username != username)
-            {
-                if (await _userManager.FindByNameAsync(Input.Username) != null)
-                {
-                    StatusMessage = "This username is already taken";
-                    return RedirectToPage();
-                }
+            user.FullName = Input.FullName;
+            user.UserName = Input.Username;
+            user.PhoneNumber = Input.PhoneNumber;
+            user.Description = Input.Description;
 
-                var setUserNameResult = await _userManager.SetUserNameAsync(user, Input.Username);
-                if (!setUserNameResult.Succeeded)
-                {
-                    StatusMessage = "Unexpected error when trying to set username.";
-                    return RedirectToPage();
-                }
-            }
+            var updateResult = await _userManager.UpdateAsync(user);
 
-            if (Input.PhoneNumber != phoneNumber)
+            if (!updateResult.Succeeded)
             {
-                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-                if (!setPhoneResult.Succeeded)
-                {
-                    StatusMessage = "Unexpected error when trying to set phone number.";
-                    return RedirectToPage();
-                }
+                StatusMessage = "Unexpected error when trying to update information.";
+                return RedirectToPage();
             }
 
             await _signInManager.RefreshSignInAsync(user);
