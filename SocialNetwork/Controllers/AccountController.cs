@@ -25,7 +25,7 @@ namespace SocialNetwork.Controllers
         public AccountController(ApplicationDbContext context, SignInManager<Profile> signInManager)
         {
             _context = context;
-            passwordHasher = new PasswordHasher<Profile>(null);
+            passwordHasher = new PasswordHasher<Profile>();
             _signInManager = signInManager;
         }
 

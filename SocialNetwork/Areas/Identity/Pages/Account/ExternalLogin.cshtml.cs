@@ -132,7 +132,7 @@ namespace SocialNetwork.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                var user = new Profile { UserName = Input.Username, FullName = Input.FullName, Email = Input.Email };
+                var user = new Profile { UserName = Input.Username, FullName = Input.FullName, Email = Input.Email, Followers = new(), Following = new(), Likes = new(), Comments = new(), Posts = new() };
 
                 bool failedRegister = false;
 

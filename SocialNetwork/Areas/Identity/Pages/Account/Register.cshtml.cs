@@ -109,7 +109,7 @@ namespace SocialNetwork.Areas.Identity.Pages.Account
                 if (failedRegister)
                     return Page();
 
-                var user = new Profile { UserName = Input.Username, PhoneNumber = Input.PhoneNumber, Email = Input.Email, FullName = Input.FullName };
+                var user = new Profile { UserName = Input.Username, PhoneNumber = Input.PhoneNumber, Email = Input.Email, FullName = Input.FullName, Followers = new(), Following = new(), Likes = new(), Comments = new(), Posts = new() };
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)

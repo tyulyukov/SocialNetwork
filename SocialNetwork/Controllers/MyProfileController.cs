@@ -32,7 +32,12 @@ namespace SocialNetwork.Controllers
             if (!_signInManager.IsSignedIn(User))
                 return RedirectToPage("/Account/AccessDenied", new { Area = "Identity" });
 
-            var user = await _userManager.GetUserAsync(User);
+            var userId = (await _userManager.GetUserAsync(User)).Id;
+
+            var user = await _context.Users
+               .Include(u => u.Followers)
+               .Include(u => u.Following)
+               .FirstOrDefaultAsync(u => u.Id == userId);
 
             ViewBag.Posts = await _context.Posts
                 .Where(p => p.Author == user)

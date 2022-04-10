@@ -32,7 +32,7 @@ namespace SocialNetwork
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<Profile>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<Profile>(options => { options.SignIn.RequireConfirmedAccount = true; })
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
             services.AddRazorPages();
@@ -77,7 +77,7 @@ namespace SocialNetwork
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             Media.WebRootPath = env.WebRootPath;
-
+            
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
