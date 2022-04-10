@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SocialNetwork.Data.Entities;
+using SocialNetwork.Helpers;
 
 namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
 {
@@ -31,6 +31,9 @@ namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
 
         public class InputModel
         {
+            [Display(Name = "Avatar")]
+            public string AvatarImageUrl { get; set; }
+
             [Display(Name = "Username")]
             [RegularExpression(@"^[a-zA-Z0-9]*$", ErrorMessage = "Username must contain only letters without spaces")]
             public string Username { get; set; }
@@ -58,7 +61,8 @@ namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
                 Username = userName,
                 PhoneNumber = phoneNumber,
                 FullName = user.FullName,
-                Description = user.Description
+                Description = user.Description,
+                AvatarImageUrl = user.AvatarImageUrl
             };
         }
 
@@ -74,7 +78,7 @@ namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(IFormFile file)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -91,10 +95,24 @@ namespace SocialNetwork.Areas.Identity.Pages.Account.Manage
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             var username = await _userManager.GetUserNameAsync(user);
 
-            if (Input.Username == username && Input.PhoneNumber == phoneNumber && Input.FullName == user.FullName && Input.Description == user.Description)
+            if (Input.Username == username && Input.PhoneNumber == phoneNumber && Input.FullName == user.FullName && Input.Description == user.Description && file == null)
             {
                 StatusMessage = "Your profile is unchanged.";
                 return RedirectToPage();
+            }
+
+            if (file != null)
+            {
+                var imageUrl = Media.UploadAvatar(file, "avatars");
+                if (String.IsNullOrEmpty(imageUrl))
+                {
+                    StatusMessage = "Something went wrong due uploading new avatar.";
+                    return RedirectToPage();
+                }
+                else
+                {
+                    user.AvatarImageUrl = imageUrl;
+                }
             }
 
             user.FullName = Input.FullName;
