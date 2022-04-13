@@ -9,6 +9,7 @@ namespace SocialNetwork.Data.Entities
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
+        public String Text { get; set; }
         public Post Post { get; set; }
         public Profile Author { get; set; }
         public Comment? RepliedComment { get; set; }

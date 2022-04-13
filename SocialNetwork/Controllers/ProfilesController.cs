@@ -28,9 +28,10 @@ namespace SocialNetwork.Controllers
                 return NotFound();
 
             var profile = await _context.Users
+                .Where(m => m.UserName.ToLower() == username.ToLower())
                 .Include(u => u.Followers)
                 .Include(u => u.Following)
-                .FirstOrDefaultAsync(m => m.UserName.ToLower() == username.ToLower());
+                .FirstAsync();
 
             if (profile == null)
                 return NotFound();

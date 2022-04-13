@@ -100,7 +100,7 @@
                         </div>
                     </div>
 
-                        @foreach (var post in ViewBag.Posts)
+                        @foreach (var post in Model.Posts)
                         {
                             <div class="col-md-12">
                                 <div class="card rounded">
@@ -180,7 +180,7 @@
                                                 </a>
                                             }
                                             
-                                            <a href="javascript:;" id="@post.Id" class="d-flex align-items-center text-muted mr-4">
+                                            <a asp-action="Index" asp-controller="Posts" asp-route-id="@post.Id" id="@post.Id" class="d-flex align-items-center text-muted mr-4">
                                                 <i class="fa-regular fa-comment feather feather-columns mr-1 icon-md"></i>
                                                 <span class="d-none d-md-block ml-2">Comment (@post.Comments.Count)</span>
                                             </a>

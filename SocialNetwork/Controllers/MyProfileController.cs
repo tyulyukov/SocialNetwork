@@ -35,9 +35,10 @@ namespace SocialNetwork.Controllers
             var userId = (await _userManager.GetUserAsync(User)).Id;
 
             var user = await _context.Users
+               .Where(u => u.Id == userId)
                .Include(u => u.Followers)
                .Include(u => u.Following)
-               .FirstOrDefaultAsync(u => u.Id == userId);
+               .FirstAsync();
 
             ViewBag.Posts = await _context.Posts
                 .Where(p => p.Author == user)
@@ -73,7 +74,7 @@ namespace SocialNetwork.Controllers
                         post.Attachments.Add(new Image() { Id = Guid.NewGuid(), CreatedAt = DateTime.Now, Url = imageUrl, Post = post} );
                 }
 
-                _context.Add(post);
+                _context.Posts.Add(post);
                 await _context.SaveChangesAsync();
             }
 

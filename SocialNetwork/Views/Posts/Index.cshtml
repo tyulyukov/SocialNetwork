@@ -1,0 +1,480 @@
+﻿@model SocialNetwork.Data.Entities.Post
+@{
+    ViewData["Title"] = Model.Author.UserName + "'s post";
+}
+
+<div class="col-md-8 col-xl-6 offset-md-3 middle-wrapper">
+    <a asp-action="Index" asp-controller="Profiles" asp-route-username="@Model.Author.UserName" class="card-link">
+        Back
+    </a>
+    
+    <div class="card rounded">
+        <div class="card-header">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <img class="img-xs rounded-circle" src="@Model.Author.AvatarImageUrl" alt="">
+                    <div class="ml-2">
+                        <span>
+                            @Model.Author.FullName 
+                            @if (Model.CreatedAt.ToShortDateString() == DateTime.Now.ToShortDateString())
+                            {
+                                <span class="tx-11 text-muted">
+                                    @Model.CreatedAt.ToShortTimeString()
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="tx-11 text-muted">
+                                    @Model.CreatedAt.ToShortDateString()
+                                </span>
+                            }
+                        </span>
+                    </div>
+                </div>
+                @if (ViewBag.IsMyPost == true)
+                {
+                    <a data-toggle="modal" data-target="#modal-@Model.Id" class="text-end delete-button">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </a>
+
+                    <div class="modal fade" id="modal-@Model.Id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Delete post</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete this post?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <a asp-action="DeletePost" asp-controller="MyProfile" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="card-body">
+            <span class="mb-3 tx-14">@Model.Text</span>
+        </div>
+        @if (Model.Attachments != null && Model.Attachments.Count != 0)
+        {
+            <div class="card-body">
+                @foreach (var image in Model.Attachments)
+                {
+                    <img class="mb-3 tx-14" src="@image.Url" style="max-width: 200px; max-height: 200px; border-radius: 2px;"/>
+                }
+            </div>
+        }
+        <div class="card-footer">
+            <div class="d-flex post-actions">
+                @if (ViewBag.IsLiked)
+                {
+                    <a href="javascript:;" id="like-@Model.Id" class="d-flex align-items-center text-muted mr-4 unlike-button">
+                        <i id="like-heart-@Model.Id" class="fa-solid fa-heart feather feather-columns mr-1 icon-md"></i>
+                        <span id="like-text-@Model.Id" style="color: red" class="d-none d-md-block ml-2">Like (<span id="like-number-@Model.Id">@Model.Likes.Count</span>)</span>
+                    </a>
+                }
+                else
+                {
+                    <a href="javascript:;" id="like-@Model.Id" class="d-flex align-items-center text-muted mr-4 like-button">
+                        <i id="like-heart-@Model.Id" class="fa-regular fa-heart feather feather-columns mr-1 icon-md"></i>
+                        <span id="like-text-@Model.Id" class="d-none d-md-block ml-2">Like (<span id="like-number-@Model.Id">@Model.Likes.Count</span>)</span>
+                    </a>
+                }
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <form asp-action="SendComment" class="form-horizontal">
+                <input type="hidden" name="postId" value="@Model.Id" />
+
+                <div class="input-group input-group-sm mb-0">
+                    <input name="Text" class="form-control form-control-sm" placeholder="Comment">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="comments-section">
+        <div class="card rounded">
+            @foreach (var comment in ViewBag.Comments)
+            {
+                <div class="card-header" style="padding-bottom: 5px; border-bottom: 0px">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <img class="img-xs rounded-circle" src="@comment.Author.AvatarImageUrl" alt="">
+                            <div class="ml-2">
+                                <span>
+                                    @comment.Author.FullName 
+                                    @if (comment.CreatedAt.ToShortDateString() == DateTime.Now.ToShortDateString())
+                                    {
+                                        <span class="tx-11 text-muted">
+                                            @comment.CreatedAt.ToShortTimeString()
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="tx-11 text-muted">
+                                            @comment.CreatedAt.ToShortDateString()
+                                        </span>
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body"  style="padding-top: 5px;">
+                    <span class="mb-3 tx-14">@comment.Text</span>
+                </div>
+
+                <div class="card" style="padding-left: 75px;">
+                    @foreach (var childComment in comment.ChildrenComments)
+                    {
+                        <div class="card-header" style="padding-bottom: 5px; border-bottom: 0px">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <img class="img-xs rounded-circle" src="@childComment.Author.AvatarImageUrl" alt="">
+                                    <div class="ml-2">
+                                        <span>
+                                            @childComment.Author.FullName 
+                                            @if (childComment.CreatedAt.ToShortDateString() == DateTime.Now.ToShortDateString())
+                                            {
+                                                <span class="tx-11 text-muted">
+                                                    @childComment.CreatedAt.ToShortTimeString()
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="tx-11 text-muted">
+                                                    @childComment.CreatedAt.ToShortDateString()
+                                                </span>
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body"  style="padding-top: 5px;">
+                            <span class="mb-3 tx-14">@childComment.Text</span>
+                        </div>
+                    }
+
+                    <div class="card-footer">
+                        <form asp-action="SendCommentReply" class="form-horizontal">
+                            <input type="hidden" name="postId" value="@Model.Id" />
+                            <input type="hidden" name="repliedCommentId" value="@comment.Id" />
+
+                            <div class="input-group input-group-sm mb-0">
+                                <input name="Text" class="form-control form-control-sm" placeholder="Comment">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-primary">Send</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+<script>
+    let likeButtons = document.getElementsByClassName("like-button");
+    let unlikeButtons = document.getElementsByClassName("unlike-button");
+
+    for (let button of likeButtons)
+    {
+        button.onclick = function() { like(button, button.id.replace("like-", "")); };
+    }
+
+    for (let button of unlikeButtons) 
+    {
+        button.onclick = function() { unlike(button, button.id.replace("like-", "")); };
+    }
+
+    function like(button, id)
+    {
+        button.onclick = null;
+
+        fetch (window.location.origin + "/api/Like/" + id, {
+                method: 'POST',
+            })
+            .then(res => { 
+                return res; 
+            })
+            .then(data => { 
+                if (data.status != 200)
+                    return;
+
+                let likeText = document.getElementById("like-text-" + id);
+                let likeNumberText = document.getElementById("like-number-" + id);
+                let likeHeart = document.getElementById("like-heart-" + id);
+
+                likeHeart.classList.replace("fa-regular", "fa-solid");
+                likeText.style.color = "red";
+                likeNumberText.innerHTML = parseInt(likeNumberText.innerHTML) + 1;
+
+                button.onclick = function() { unlike(button, id); };
+
+            })
+            .catch(err => console.error(err));
+    }
+
+    function unlike(button, id)
+    {
+        button.onclick = null;
+
+        fetch (window.location.origin + "/api/Like/" + id, {
+                method: 'DELETE',
+            })
+            .then(res => { 
+                return res; 
+            })
+            .then(data => { 
+                let likeText = document.getElementById("like-text-" + id);
+                let likeNumberText = document.getElementById("like-number-" + id);
+                let likeHeart = document.getElementById("like-heart-" + id);
+
+                likeHeart.classList.replace("fa-solid", "fa-regular");
+                likeText.style.color = "";
+                likeNumberText.innerHTML = parseInt(likeNumberText.innerHTML) - 1;
+
+                button.onclick = function() { like(button, id); };
+            })
+            .catch(err => console.error(err));
+    }
+</script>
+
+<style>
+    body {
+        background-color: #f9fafb;
+        margin-top: 20px;
+    }
+
+    .profile-page .profile-header {
+        box-shadow: 0 0 10px 0 rgba(183, 192, 206, 0.2);
+        border: 1px solid #f2f4f9;
+    }
+
+    .profile-page .profile-header .cover {
+        position: relative;
+        border-radius: .25rem .25rem 0 0;
+    }
+
+
+    .profile-page .profile-header .cover figure {
+        margin-bottom: 0;
+    }
+
+    @@media (max-width: 767px) {
+        .profile-page .profile-header .cover figure {
+            height: 110px;
+            overflow: hidden;
+        }
+    }
+
+    @@media (min-width: 2400px) {
+        .profile-page .profile-header .cover figure {
+            height: 280px;
+            overflow: hidden;
+        }
+    }
+
+    .profile-page .profile-header .cover figure img {
+        border-radius: .25rem .25rem 0 0;
+        width: 100%;
+    }
+
+    @@media (max-width: 767px) {
+        .profile-page .profile-header .cover figure img {
+            -webkit-transform: scale(2);
+            transform: scale(2);
+            margin-top: 15px;
+        }
+    }
+
+    @@media (min-width: 2400px) {
+        .profile-page .profile-header .cover figure img {
+            margin-top: -55px;
+        }
+    }
+
+    .profile-page .profile-header .cover .gray-shade {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        background: linear-gradient(rgba(255, 255, 255, 0.1), #fff 99%);
+    }
+
+    .profile-page .profile-header .cover .cover-body {
+        position: absolute;
+        bottom: -20px;
+        left: 0;
+        z-index: 2;
+        width: 100%;
+        padding: 0 20px;
+    }
+
+    .profile-page .profile-header .cover .cover-body .profile-pic {
+        border-radius: 50%;
+        width: 100px;
+    }
+
+    @@media (max-width: 767px) {
+        .profile-page .profile-header .cover .cover-body .profile-pic {
+            width: 70px;
+        }
+    }
+
+    .profile-page .profile-header .cover .cover-body .profile-name {
+        font-size: 20px;
+        font-weight: 600;
+        margin-left: 17px;
+    }
+
+    .profile-page .profile-header .header-links {
+        padding: 15px;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-justify-content: center;
+        justify-content: center;
+        background: #fff;
+        border-radius: 0 0 .25rem .25rem;
+    }
+
+    .profile-page .profile-header .header-links ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .profile-page .profile-header .header-links ul li a {
+        color: #000;
+        -webkit-transition: all .2s ease;
+        transition: all .2s ease;
+    }
+
+    .profile-page .profile-header .header-links ul li:hover,
+    .profile-page .profile-header .header-links ul li.active {
+        color: #727cf5;
+    }
+
+    .profile-page .profile-header .header-links ul li:hover a,
+    .profile-page .profile-header .header-links ul li.active a {
+        color: #727cf5;
+    }
+
+    .profile-page .profile-body .left-wrapper .social-links a {
+        width: 30px;
+        height: 30px;
+    }
+
+    .profile-page .profile-body .right-wrapper .latest-photos > .row {
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    .profile-page .profile-body .right-wrapper .latest-photos > .row > div {
+        padding-left: 3px;
+        padding-right: 3px;
+    }
+
+    .profile-page .profile-body .right-wrapper .latest-photos > .row > div figure {
+        -webkit-transition: all .3s ease-in-out;
+        transition: all .3s ease-in-out;
+        margin-bottom: 6px;
+    }
+
+    .profile-page .profile-body .right-wrapper .latest-photos > .row > div figure:hover {
+        -webkit-transform: scale(1.06);
+        transform: scale(1.06);
+    }
+
+    .profile-page .profile-body .right-wrapper .latest-photos > .row > div figure img {
+        border-radius: .25rem;
+    }
+
+    .rtl .profile-page .profile-header .cover .cover-body .profile-name {
+        margin-left: 0;
+        margin-right: 17px;
+    }
+
+    .img-xs {
+        width: 37px;
+        height: 37px;
+    }
+
+    .rounded-circle {
+        border-radius: 50% !important;
+    }
+
+    img {
+        vertical-align: middle;
+        border-style: none;
+    }
+
+    .card-header:first-child {
+        border-radius: 0 0 0 0;
+    }
+
+    .card-header {
+        padding: 0.875rem 1.5rem;
+        margin-bottom: 0;
+        background-color: rgba(0, 0, 0, 0);
+        border-bottom: 1px solid #f2f4f9;
+    }
+
+    .card-footer:last-child {
+        border-radius: 0 0 0 0;
+    }
+
+    .card-footer {
+        padding: 0.875rem 1.5rem;
+        background-color: rgba(0, 0, 0, 0);
+        border-top: 1px solid #f2f4f9;
+    }
+
+    .grid-margin {
+        margin-bottom: 1rem;
+    }
+
+    .card {
+        box-shadow: 0 0 10px 0 rgba(183, 192, 206, 0.2);
+        -webkit-box-shadow: 0 0 10px 0 rgba(183, 192, 206, 0.2);
+        -moz-box-shadow: 0 0 10px 0 rgba(183, 192, 206, 0.2);
+        -ms-box-shadow: 0 0 10px 0 rgba(183, 192, 206, 0.2);
+    }
+
+    .rounded {
+        border-radius: 0.25rem !important;
+    }
+
+    .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        word-wrap: break-word;
+        background-color: #fff;
+        background-clip: border-box;
+        border: 1px solid #f2f4f9;
+        border-radius: 0.25rem;
+    }
+</style>
