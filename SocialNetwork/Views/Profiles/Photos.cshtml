@@ -1,50 +1,94 @@
-﻿@model IEnumerable<SocialNetwork.Data.Entities.Post>
+﻿@model SocialNetwork.Data.Entities.Profile
 @{
-    ViewData["Title"] = "Feed";
+    ViewData["Title"] = $"Photos by {Model.FullName} (@{Model.UserName})";
 }
 
-<div class="col-md-8 col-xl-6 offset-md-3 middle-wrapper">
-    @foreach (var post in Model)
-    {
-        <div class="col-md-12">
-            <div class="card rounded">
-                <div class="card-header">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <img class="img-xs rounded-circle" src="@post.Author.AvatarImageUrl" alt="">
-                            <div class="ml-2">
-                                <span>
-                                    <a style="color: CaptionText" asp-action="Index" asp-controller="Profiles" asp-route-username="@post.Author.UserName">@post.Author.FullName</a>  
-                                    @if (post.CreatedAt.ToShortDateString() == DateTime.Now.ToShortDateString())
-                                    {
-                                        <span class="tx-11 text-muted">
-                                            @post.CreatedAt.ToShortTimeString()
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="tx-11 text-muted">
-                                            @post.CreatedAt.ToShortDateString()
-                                        </span>
-                                    }
-                                </span>
+<div class="container">
+    <div class="profile-page tx-13">
+        <div class="row">
+            <div class="col-12 grid-margin">
+                <div class="profile-header">
+                    <div class="cover">
+                        <div class="gray-shade"></div>
+                        <figure>
+                            <img src="https://www.shutterstock.com/blog/wp-content/uploads/sites/5/2020/02/Usign-Gradients-Featured-Image.jpg" style="height:300px" class="img-fluid" alt="profile cover">
+                        </figure>
+                        <div class="cover-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <img class="profile-pic" src="@Model.AvatarImageUrl" alt="profile">
+                                <span class="profile-name">@Model.FullName <span class="tx-11 text-muted">@@@Model.UserName</span></span>
+                            </div>
+                            <div class="d-none d-md-block">
+                                @if (!ViewBag.IsFollowing)
+                                {
+                                    <button onclick="subscribe(this, '@Model.Id')" class="btn btn-primary mt-2 btn-icon-text btn-edit-profile">
+                                        <i class="fa-solid fa-bell feather feather-columns mr-1 icon-md"></i>
+                                        Follow
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button onclick="unsubscribe(this, '@Model.Id')" class="btn btn-outline-primary mt-2 btn-icon-text btn-edit-profile">
+                                        <i class="fa-solid fa-bell-slash feather feather-columns mr-1 icon-md"></i>
+                                        Unfollow
+                                    </button>
+                                }
                             </div>
                         </div>
                     </div>
+                    <div class="header-links">
+                        <ul class="links d-flex align-items-center mt-3 mt-md-0">
+                            <li class="header-link-item d-flex align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-columns mr-1 icon-md">
+                                    <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path>
+                                </svg>
+                                <a class="pt-1px d-none d-md-block" asp-action="Index" asp-controller="Profiles" asp-route-username="@Model.UserName">Feed</a>
+                            </li>
+                            <li class="header-link-item ml-3 pl-3 border-left d-flex align-items-center active">
+                                <i class="fas fa-image feather feather-columns mr-1 icon-md"></i>
+                                <a class="pt-1px d-none d-md-block" href="/Profiles/@Model.UserName/Photos">Photos</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <span class="mb-3 tx-14">@post.Text</span>
-                </div>
-                @if (post.Attachments != null && post.Attachments.Count != 0)
-                {
+            </div>
+        </div>
+        <div class="row profile-body">
+            <!-- left wrapper start -->
+            <div class="d-none d-md-block col-md-4 col-xl-3 left-wrapper">
+                <div class="card rounded">
                     <div class="card-body">
-                        @foreach (var image in post.Attachments)
+                        @if (!String.IsNullOrWhiteSpace(Model.Description))
                         {
-                            <a data-toggle="modal" data-target="#modal-@image.Id">
-                                <img class="mb-3 tx-14" src="@image.Url" style="max-width: 200px; max-height: 200px; border-radius: 2px;"/>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="card-title mb-0">About</h6>
+                            </div>
+                            <p>@Model.Description</p>
+                        }
+                        <a href="/Profiles/@Model.UserName/Followers" class="mt-3">
+                            <label style="color: black" class="tx-11 font-weight-bold mb-0 text-uppercase">Followers:</label>
+                            <p id="followers-count" class="text-muted">@Model.Followers.Count</p>
+                        </a>
+                        <a href="/Profiles/@Model.UserName/Following" class="mt-3">
+                            <label style="color: black" class="tx-11 font-weight-bold mb-0 text-uppercase">Following:</label>
+                            <p class="text-muted">@Model.Following.Count</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- left wrapper end -->
+            <!-- middle wrapper start -->
+            <div class="col-md-8 col-xl-6 middle-wrapper">
+                 <!-- Gallery -->
+                <div class="row">
+                    @foreach (var photo in ViewBag.Photos)
+                    {
+                        <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
+                            <a data-toggle="modal" data-target="#modal-@photo.Id">
+                                <img src="@photo.Url" class="w-100 shadow-1-strong rounded mb-4" />
                             </a>
 
-                            <div class="modal fade" id="modal-@image.Id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal fade" id="modal-@photo.Id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-lg" role="document">
                                     <div class="modal-content">
                                         <div class="modal-header">
@@ -53,61 +97,28 @@
                                             </button>
                                         </div>
                                         <div class="modal-body">
-                                            <img src="@image.Url" style="max-width: 100%; max-height: 100%;" />
+                                            <img src="@photo.Url" style="max-width: 100%; max-height: 100%;" />
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        }
-                    </div>
-                }
-                <div class="card-footer">
-                    <div class="d-flex post-actions">
-                        @if (ViewBag.LikedPosts.Contains(post))
-                        {
-                            <a href="javascript:;" id="like-@post.Id" class="d-flex align-items-center text-muted mr-4 unlike-button">
-                                <i id="like-heart-@post.Id" class="fa-solid fa-heart feather feather-columns mr-1 icon-md"></i>
-                                <span id="like-text-@post.Id" style="color: red" class="d-none d-md-block ml-2">Like (<span id="like-number-@post.Id">@post.Likes.Count</span>)</span>
-                            </a>
-                        }
-                        else
-                        {
-                            <a href="javascript:;" id="like-@post.Id" class="d-flex align-items-center text-muted mr-4 like-button">
-                                <i id="like-heart-@post.Id" class="fa-regular fa-heart feather feather-columns mr-1 icon-md"></i>
-                                <span id="like-text-@post.Id" class="d-none d-md-block ml-2">Like (<span id="like-number-@post.Id">@post.Likes.Count</span>)</span>
-                            </a>
-                        }
-                                            
-                        <a asp-action="Index" asp-controller="Posts" asp-route-id="@post.Id" class="d-flex align-items-center text-muted mr-4">
-                            <i class="fa-regular fa-comment feather feather-columns mr-1 icon-md"></i>
-                            <span class="d-none d-md-block ml-2">Comment (@post.Comments.Count)</span>
-                        </a>
-                    </div>
+                        </div>
+                    }
                 </div>
+                <!-- Gallery -->
             </div>
         </div>
-    }
+    </div>
 </div>
 
 <script>
-    let likeButtons = document.getElementsByClassName("like-button");
-    let unlikeButtons = document.getElementsByClassName("unlike-button");
+    let followersCount = document.getElementById("followers-count");
 
-    for (let button of likeButtons)
-    {
-        button.onclick = function() { like(button, button.id.replace("like-", "")); };
-    }
-
-    for (let button of unlikeButtons) 
-    {
-        button.onclick = function() { unlike(button, button.id.replace("like-", "")); };
-    }
-
-    function like(button, id)
+    function subscribe(button, id)
     {
         button.onclick = null;
 
-        fetch (window.location.origin + "/api/Like/" + id, {
+        fetch (window.location.origin + "/api/Follow/" + id, {
                 method: 'POST',
             })
             .then(res => { 
@@ -117,40 +128,32 @@
                 if (data.status != 200)
                     return;
 
-                let likeText = document.getElementById("like-text-" + id);
-                let likeNumberText = document.getElementById("like-number-" + id);
-                let likeHeart = document.getElementById("like-heart-" + id);
-
-                likeHeart.classList.replace("fa-regular", "fa-solid");
-                likeText.style.color = "red";
-                likeNumberText.innerHTML = parseInt(likeNumberText.innerHTML) + 1;
-
-                button.onclick = function() { unlike(button, id); };
-
+                followersCount.innerHTML = parseInt(followersCount.innerHTML) + 1;
+                button.innerHTML = '<i class="fa-solid fa-bell-slash feather feather-columns mr-1 icon-md"></i>Unfollow';
+                button.classList.replace("btn-primary", "btn-outline-primary");
+                button.onclick = function() { unsubscribe(button, id); };
             })
             .catch(err => console.error(err));
     }
 
-    function unlike(button, id)
+    function unsubscribe(button, id)
     {
         button.onclick = null;
 
-        fetch (window.location.origin + "/api/Like/" + id, {
+        fetch (window.location.origin + "/api/Follow/" + id, {
                 method: 'DELETE',
             })
             .then(res => { 
                 return res; 
             })
             .then(data => { 
-                let likeText = document.getElementById("like-text-" + id);
-                let likeNumberText = document.getElementById("like-number-" + id);
-                let likeHeart = document.getElementById("like-heart-" + id);
+                if (data.status != 200)
+                    return;
 
-                likeHeart.classList.replace("fa-solid", "fa-regular");
-                likeText.style.color = "";
-                likeNumberText.innerHTML = parseInt(likeNumberText.innerHTML) - 1;
-
-                button.onclick = function() { like(button, id); };
+                followersCount.innerHTML = parseInt(followersCount.innerHTML) - 1;
+                button.innerHTML = '<i class="fa-solid fa-bell feather feather-columns mr-1 icon-md"></i>Follow';
+                button.classList.replace("btn-outline-primary", "btn-primary");
+                button.onclick = function() { subscribe(button, id); };
             })
             .catch(err => console.error(err));
     }

@@ -40,15 +40,79 @@ namespace SocialNetwork.Controllers
                .Include(u => u.Following)
                .FirstAsync();
 
-            ViewBag.Posts = await _context.Posts
+            var posts = await _context.Posts
                 .Where(p => p.Author == user)
                 .Include(p => p.Attachments)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
+                .Include(p => p.Author)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
-            ViewBag.LikedPosts = await _context.Posts.Where(p => p.Author == user && p.Likes.Any(l => l.Author == user)).ToListAsync();
+            ViewBag.Posts = posts;
+            ViewBag.LikedPosts = posts.Where(p => p.Likes.Any(l => l.Author == user)).ToList();
+
+            return View(user);
+        }
+
+        public async Task<IActionResult> Photos()
+        {
+            var userId = (await _userManager.GetUserAsync(User)).Id;
+
+            var user = await _context.Users
+               .Where(u => u.Id == userId)
+               .Include(u => u.Followers)
+               .Include(u => u.Following)
+               .FirstAsync();
+
+            var photos = await _context.Images
+                .Where(p => p.Post.Author == user)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            ViewBag.Photos = photos;
+
+            return View(user);
+        }
+
+        public async Task<IActionResult> Followers()
+        {
+            var userId = (await _userManager.GetUserAsync(User)).Id;
+
+            var user = await _context.Users
+               .Where(u => u.Id == userId)
+               .Include(u => u.Followers)
+               .Include(u => u.Following)
+               .FirstAsync();
+
+            var followers = _context.Users
+                .Where(u => u.Following.Contains(user))
+                .Include(u => u.Following)
+                .Include(u => u.Followers)
+                .ToList();
+
+            ViewBag.Followers = followers;
+
+            return View(user);
+        }
+
+        public async Task<IActionResult> Following()
+        {
+            var userId = (await _userManager.GetUserAsync(User)).Id;
+
+            var user = await _context.Users
+               .Where(u => u.Id == userId)
+               .Include(u => u.Followers)
+               .Include(u => u.Following)
+               .FirstAsync();
+
+            var following = _context.Users
+                .Where(u => u.Followers.Contains(user))
+                .Include(u => u.Following)
+                .Include(u => u.Followers)
+                .ToList();
+
+            ViewBag.Following = following;
 
             return View(user);
         }

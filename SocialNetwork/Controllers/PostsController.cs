@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SocialNetwork.Data;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace SocialNetwork.Controllers
 {
+    [Authorize]
     public class PostsController : Controller
     {
         private readonly UserManager<Profile> _userManager;
@@ -35,13 +37,23 @@ namespace SocialNetwork.Controllers
 
             var user = await _userManager.GetUserAsync(User);
 
-            ViewBag.Comments = _context.Comments
+            if (user == null)
+                return NotFound();
+
+            var comments = _context.Comments
                 .Where(c => c.Post.Id == id && c.RepliedComment == null)
                 .Include(c => c.Author)
-                .Include(c => c.RepliedComment)
-                .Include(c => c.ChildrenComments.OrderBy(cc => cc.CreatedAt))
                 .ToList();
 
+            foreach (var comment in comments)
+                comment.ChildrenComments = _context.Comments
+                    .Where(c => c.RepliedComment.Id == comment.Id)
+                    .Include(c => c.Author)
+                    .Include(c => c.RepliedComment)
+                    .OrderBy(cc => cc.CreatedAt)
+                    .ToList();
+
+            ViewBag.Comments = comments;
             ViewBag.IsLiked = post.Likes.Any(l => l.Author == user);
             ViewBag.IsMyPost = post.Author == user;
 
@@ -82,6 +94,9 @@ namespace SocialNetwork.Controllers
             if (ModelState.IsValid && !String.IsNullOrWhiteSpace(comment.Text))
             {
                 var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                    return NotFound();
 
                 var repliedComment = _context.Comments.Find(repliedCommentId);
 

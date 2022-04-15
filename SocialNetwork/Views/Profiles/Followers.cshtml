@@ -1,6 +1,6 @@
 ﻿@model SocialNetwork.Data.Entities.Profile
 @{
-    ViewData["Title"] = $"{Model.FullName} (@{Model.UserName})";
+    ViewData["Title"] = $"Followers {Model.FullName} (@{Model.UserName})";
 }
 
 <div class="container">
@@ -38,7 +38,7 @@
                     </div>
                     <div class="header-links">
                         <ul class="links d-flex align-items-center mt-3 mt-md-0">
-                            <li class="header-link-item d-flex align-items-center active">
+                            <li class="header-link-item d-flex align-items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-columns mr-1 icon-md">
                                     <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path>
                                 </svg>
@@ -65,7 +65,7 @@
                             </div>
                             <p>@Model.Description</p>
                         }
-                        <a href="/Profiles/@Model.UserName/Followers" class="mt-3">
+                        <a href="/Profiles/@Model.UserName/Followers" class="mt-3 active">
                             <label style="color: black" class="tx-11 font-weight-bold mb-0 text-uppercase">Followers:</label>
                             <p id="followers-count" class="text-muted">@Model.Followers.Count</p>
                         </a>
@@ -79,90 +79,46 @@
             <!-- left wrapper end -->
             <!-- middle wrapper start -->
             <div class="col-md-8 col-xl-6 middle-wrapper">
-                <div class="row">
-                    @foreach (var post in ViewBag.Posts)
-                    {
-                        <div class="col-md-12">
-                            <div class="card rounded">
-                                <div class="card-header">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center">
-                                            <img class="img-xs rounded-circle" src="@post.Author.AvatarImageUrl" alt="">
-                                            <div class="ml-2">
-                                                <span>
-                                                    @post.Author.FullName 
-                                                    @if (post.CreatedAt.ToShortDateString() == DateTime.Now.ToShortDateString())
-                                                    {
-                                                        <span class="tx-11 text-muted">
-                                                            @post.CreatedAt.ToShortTimeString()
-                                                        </span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="tx-11 text-muted">
-                                                            @post.CreatedAt.ToShortDateString()
-                                                        </span>
-                                                    }
-                                                </span>
+                 <div class="row">
+                    @foreach(var profile in ViewBag.Followers)
+                        {
+                            <div class="col-12 col-sm-8 col-md-6 d-flex align-items-stretch flex-column">
+                                <div class="card bg-light d-flex flex-fill">
+                                    <div class="card-header text-muted border-bottom-0">
+                                        @profile.UserName
+                                    </div>
+                                    <div class="card-body pt-0">
+                                        <div class="row">
+                                            <div class="col-7">
+                                                <h2 class="lead"><b>@profile.FullName</b></h2>
+                                                @if (!String.IsNullOrWhiteSpace(@profile.Description))
+                                                { 
+                                                    <p class="text-muted text-sm"><b>About: </b> @profile.Description </p>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted text-sm"><b>About: </b> none. </p>
+                                                }
+                                                <ul class="ml-4 mb-0 fa-ul text-muted">
+                                                    <li class="small"><span class="fa-li"><i class="fa-solid fa-users"></i></span> Followers: @profile.Followers.Count</li>
+                                                    <li class="small"><span class="fa-li"><i class="fa-solid fa-eye"></i></span> Following: @profile.Following.Count</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-5 text-center">
+                                                <img src="@profile.AvatarImageUrl" alt="user-avatar" class="img-circle img-fluid">
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="card-body">
-                                    <span class="mb-3 tx-14">@post.Text</span>
-                                </div>
-                                @if (post.Attachments != null && post.Attachments.Count != 0)
-                                {
-                                    <div class="card-body">
-                                        @foreach (var image in post.Attachments)
-                                        {
-                                            <a data-toggle="modal" data-target="#modal-@image.Id">
-                                                <img class="mb-3 tx-14" src="@image.Url" style="max-width: 200px; max-height: 200px; border-radius: 2px;"/>
+                                    <div class="card-footer">
+                                        <div class="text-right">
+                                            <a asp-action="Index" asp-controller="Profiles" asp-route-username="@profile.UserName" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-user"></i> View Profile
                                             </a>
-
-                                            <div class="modal fade" id="modal-@image.Id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <img src="@image.Url" style="max-width: 100%; max-height: 100%;" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                    </div>
-                                }
-                                <div class="card-footer">
-                                    <div class="d-flex post-actions">
-                                        @if (ViewBag.LikedPosts.Contains(post))
-                                        {
-                                            <a href="javascript:;" id="like-@post.Id" class="d-flex align-items-center text-muted mr-4 unlike-button">
-                                                <i id="like-heart-@post.Id" class="fa-solid fa-heart feather feather-columns mr-1 icon-md"></i>
-                                                <span id="like-text-@post.Id" style="color: red" class="d-none d-md-block ml-2">Like (<span id="like-number-@post.Id">@post.Likes.Count</span>)</span>
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <a href="javascript:;" id="like-@post.Id" class="d-flex align-items-center text-muted mr-4 like-button">
-                                                <i id="like-heart-@post.Id" class="fa-regular fa-heart feather feather-columns mr-1 icon-md"></i>
-                                                <span id="like-text-@post.Id" class="d-none d-md-block ml-2">Like (<span id="like-number-@post.Id">@post.Likes.Count</span>)</span>
-                                            </a>
-                                        }
-                                            
-                                        <a asp-action="Index" asp-controller="Posts" asp-route-id="@post.Id" id="@post.Id" class="d-flex align-items-center text-muted mr-4">
-                                            <i class="fa-regular fa-comment feather feather-columns mr-1 icon-md"></i>
-                                            <span class="d-none d-md-block ml-2">Comment (@post.Comments.Count)</span>
-                                        </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    }
+                        }
                 </div>
             </div>
         </div>
@@ -170,71 +126,7 @@
 </div>
 
 <script>
-    let likeButtons = document.getElementsByClassName("like-button");
-    let unlikeButtons = document.getElementsByClassName("unlike-button");
     let followersCount = document.getElementById("followers-count");
-
-    for (let button of likeButtons)
-    {
-        button.onclick = function() { like(button, button.id.replace("like-", "")); };
-    }
-
-    for (let button of unlikeButtons) 
-    {
-        button.onclick = function() { unlike(button, button.id.replace("like-", "")); };
-    }
-
-    function like(button, id)
-    {
-        button.onclick = null;
-
-        fetch (window.location.origin + "/api/Like/" + id, {
-                method: 'POST',
-            })
-            .then(res => { 
-                return res; 
-            })
-            .then(data => { 
-                if (data.status != 200)
-                    return;
-
-                let likeText = document.getElementById("like-text-" + id);
-                let likeNumberText = document.getElementById("like-number-" + id);
-                let likeHeart = document.getElementById("like-heart-" + id);
-
-                likeHeart.classList.replace("fa-regular", "fa-solid");
-                likeText.style.color = "red";
-                likeNumberText.innerHTML = parseInt(likeNumberText.innerHTML) + 1;
-
-                button.onclick = function() { unlike(button, id); };
-
-            })
-            .catch(err => console.error(err));
-    }
-
-    function unlike(button, id)
-    {
-        button.onclick = null;
-
-        fetch (window.location.origin + "/api/Like/" + id, {
-                method: 'DELETE',
-            })
-            .then(res => { 
-                return res; 
-            })
-            .then(data => { 
-                let likeText = document.getElementById("like-text-" + id);
-                let likeNumberText = document.getElementById("like-number-" + id);
-                let likeHeart = document.getElementById("like-heart-" + id);
-
-                likeHeart.classList.replace("fa-solid", "fa-regular");
-                likeText.style.color = "";
-                likeNumberText.innerHTML = parseInt(likeNumberText.innerHTML) - 1;
-
-                button.onclick = function() { like(button, id); };
-            })
-            .catch(err => console.error(err));
-    }
 
     function subscribe(button, id)
     {

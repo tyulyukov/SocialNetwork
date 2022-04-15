@@ -1,0 +1,336 @@
+﻿@model SocialNetwork.Data.Entities.Profile
+@{
+    ViewData["Title"] = $"My followers";
+}
+
+<div class="container">
+    <div class="profile-page tx-13">
+        <div class="row">
+            <div class="col-12 grid-margin">
+                <div class="profile-header">
+                    <div class="cover">
+                        <div class="gray-shade"></div>
+                        <figure>
+                            <img src="https://www.shutterstock.com/blog/wp-content/uploads/sites/5/2020/02/Usign-Gradients-Featured-Image.jpg" style="height:300px" class="img-fluid" alt="profile cover">
+                        </figure>
+                        <div class="cover-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <img class="profile-pic" src="@Model.AvatarImageUrl" alt="profile">
+                                <span class="profile-name">@Model.FullName <span class="tx-11 text-muted">@@@Model.UserName</span></span>
+                            </div>
+                            <div class="d-none d-md-block">
+                                <a asp-area="Identity" asp-page="/Account/Manage/Index" class="btn btn-primary btn-icon-text btn-edit-profile">
+                                    <i class="fas fa-pen-to-square feather feather-columns mr-1 icon-md"></i>
+                                    Edit profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header-links">
+                        <ul class="links d-flex align-items-center mt-3 mt-md-0">
+                            <li class="header-link-item d-flex align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-columns mr-1 icon-md">
+                                    <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path>
+                                </svg>
+                                <a class="pt-1px d-none d-md-block" asp-action="Index">Feed</a>
+                            </li>
+                            <li class="header-link-item ml-3 pl-3 border-left d-flex align-items-center">
+                                <i class="fas fa-image feather feather-columns mr-1 icon-md"></i>
+                                <a class="pt-1px d-none d-md-block" asp-action="Photos">Photos</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row profile-body">
+            <!-- left wrapper start -->
+            <div class="d-none d-md-block col-md-4 col-xl-3 left-wrapper">
+                <div class="card rounded">
+                    <div class="card-body">
+                        @if (!String.IsNullOrWhiteSpace(Model.Description))
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="card-title mb-0">About</h6>
+                            </div>
+                            <p>@Model.Description</p>
+                        }
+                        <a asp-action="Followers" class="mt-3 active">
+                            <label style="color: black" class="tx-11 font-weight-bold mb-0 text-uppercase">Followers:</label>
+                            <p id="followers-count" class="text-muted">@Model.Followers.Count</p>
+                        </a>
+                        <a asp-action="Following" class="mt-3">
+                            <label style="color: black" class="tx-11 font-weight-bold mb-0 text-uppercase">Following:</label>
+                            <p class="text-muted">@Model.Following.Count</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- left wrapper end -->
+            <!-- middle wrapper start -->
+            <div class="col-md-8 col-xl-6 middle-wrapper">
+                <div class="row">
+                    @foreach(var profile in ViewBag.Followers)
+                        {
+                            <div class="col-12 col-sm-8 col-md-6 d-flex align-items-stretch flex-column">
+                                <div class="card bg-light d-flex flex-fill">
+                                    <div class="card-header text-muted border-bottom-0">
+                                        @profile.UserName
+                                    </div>
+                                    <div class="card-body pt-0">
+                                        <div class="row">
+                                            <div class="col-7">
+                                                <h2 class="lead"><b>@profile.FullName</b></h2>
+                                                @if (!String.IsNullOrWhiteSpace(@profile.Description))
+                                                { 
+                                                    <p class="text-muted text-sm"><b>About: </b> @profile.Description </p>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted text-sm"><b>About: </b> none. </p>
+                                                }
+                                                <ul class="ml-4 mb-0 fa-ul text-muted">
+                                                    <li class="small"><span class="fa-li"><i class="fa-solid fa-users"></i></span> Followers: @profile.Followers.Count</li>
+                                                    <li class="small"><span class="fa-li"><i class="fa-solid fa-eye"></i></span> Following: @profile.Following.Count</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-5 text-center">
+                                                <img src="@profile.AvatarImageUrl" alt="user-avatar" class="img-circle img-fluid">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="text-right">
+                                            <a asp-action="Index" asp-controller="Profiles" asp-route-username="@profile.UserName" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-user"></i> View Profile
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f9fafb;
+        margin-top: 20px;
+    }
+
+    .profile-page .profile-header {
+        box-shadow: 0 0 10px 0 rgba(183, 192, 206, 0.2);
+        border: 1px solid #f2f4f9;
+    }
+
+    .profile-page .profile-header .cover {
+        position: relative;
+        border-radius: .25rem .25rem 0 0;
+    }
+
+
+    .profile-page .profile-header .cover figure {
+        margin-bottom: 0;
+    }
+
+    @@media (max-width: 767px) {
+        .profile-page .profile-header .cover figure {
+            height: 110px;
+            overflow: hidden;
+        }
+    }
+
+    @@media (min-width: 2400px) {
+        .profile-page .profile-header .cover figure {
+            height: 280px;
+            overflow: hidden;
+        }
+    }
+
+    .profile-page .profile-header .cover figure img {
+        border-radius: .25rem .25rem 0 0;
+        width: 100%;
+    }
+
+    @@media (max-width: 767px) {
+        .profile-page .profile-header .cover figure img {
+            -webkit-transform: scale(2);
+            transform: scale(2);
+            margin-top: 15px;
+        }
+    }
+
+    @@media (min-width: 2400px) {
+        .profile-page .profile-header .cover figure img {
+            margin-top: -55px;
+        }
+    }
+
+    .profile-page .profile-header .cover .gray-shade {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        background: linear-gradient(rgba(255, 255, 255, 0.1), #fff 99%);
+    }
+
+    .profile-page .profile-header .cover .cover-body {
+        position: absolute;
+        bottom: -20px;
+        left: 0;
+        z-index: 2;
+        width: 100%;
+        padding: 0 20px;
+    }
+
+    .profile-page .profile-header .cover .cover-body .profile-pic {
+        border-radius: 50%;
+        width: 100px;
+    }
+
+    @@media (max-width: 767px) {
+        .profile-page .profile-header .cover .cover-body .profile-pic {
+            width: 70px;
+        }
+    }
+
+    .profile-page .profile-header .cover .cover-body .profile-name {
+        font-size: 20px;
+        font-weight: 600;
+        margin-left: 17px;
+    }
+
+    .profile-page .profile-header .header-links {
+        padding: 15px;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-justify-content: center;
+        justify-content: center;
+        background: #fff;
+        border-radius: 0 0 .25rem .25rem;
+    }
+
+    .profile-page .profile-header .header-links ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .profile-page .profile-header .header-links ul li a {
+        color: #000;
+        -webkit-transition: all .2s ease;
+        transition: all .2s ease;
+    }
+
+    .profile-page .profile-header .header-links ul li:hover,
+    .profile-page .profile-header .header-links ul li.active {
+        color: #727cf5;
+    }
+
+    .profile-page .profile-header .header-links ul li:hover a,
+    .profile-page .profile-header .header-links ul li.active a {
+        color: #727cf5;
+    }
+
+    .profile-page .profile-body .left-wrapper .social-links a {
+        width: 30px;
+        height: 30px;
+    }
+
+    .profile-page .profile-body .right-wrapper .latest-photos > .row {
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    .profile-page .profile-body .right-wrapper .latest-photos > .row > div {
+        padding-left: 3px;
+        padding-right: 3px;
+    }
+
+    .profile-page .profile-body .right-wrapper .latest-photos > .row > div figure {
+        -webkit-transition: all .3s ease-in-out;
+        transition: all .3s ease-in-out;
+        margin-bottom: 6px;
+    }
+
+    .profile-page .profile-body .right-wrapper .latest-photos > .row > div figure:hover {
+        -webkit-transform: scale(1.06);
+        transform: scale(1.06);
+    }
+
+    .profile-page .profile-body .right-wrapper .latest-photos > .row > div figure img {
+        border-radius: .25rem;
+    }
+
+    .rtl .profile-page .profile-header .cover .cover-body .profile-name {
+        margin-left: 0;
+        margin-right: 17px;
+    }
+
+    .img-xs {
+        width: 37px;
+        height: 37px;
+    }
+
+    .rounded-circle {
+        border-radius: 50% !important;
+    }
+
+    img {
+        vertical-align: middle;
+        border-style: none;
+    }
+
+    .card-header:first-child {
+        border-radius: 0 0 0 0;
+    }
+
+    .card-header {
+        padding: 0.875rem 1.5rem;
+        margin-bottom: 0;
+        background-color: rgba(0, 0, 0, 0);
+        border-bottom: 1px solid #f2f4f9;
+    }
+
+    .card-footer:last-child {
+        border-radius: 0 0 0 0;
+    }
+
+    .card-footer {
+        padding: 0.875rem 1.5rem;
+        background-color: rgba(0, 0, 0, 0);
+        border-top: 1px solid #f2f4f9;
+    }
+
+    .grid-margin {
+        margin-bottom: 1rem;
+    }
+
+    .card {
+        box-shadow: 0 0 10px 0 rgba(183, 192, 206, 0.2);
+        -webkit-box-shadow: 0 0 10px 0 rgba(183, 192, 206, 0.2);
+        -moz-box-shadow: 0 0 10px 0 rgba(183, 192, 206, 0.2);
+        -ms-box-shadow: 0 0 10px 0 rgba(183, 192, 206, 0.2);
+    }
+
+    .rounded {
+        border-radius: 0.25rem !important;
+    }
+
+    .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        word-wrap: break-word;
+        background-color: #fff;
+        background-clip: border-box;
+        border: 1px solid #f2f4f9;
+        border-radius: 0.25rem;
+    }
+</style>
